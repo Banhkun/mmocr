@@ -15,7 +15,7 @@ cascade_mask_rcnn.update(
             mask_head=dict(num_classes=1),
         )))
 
-model = dict(type='MMDetWrapper', text_repr_type='poly', cfg=mask_rcnn)
+model = dict(type='MMDetWrapper', text_repr_type='poly', cfg=cascade_mask_rcnn)
 
 train_pipeline = [
     dict(
