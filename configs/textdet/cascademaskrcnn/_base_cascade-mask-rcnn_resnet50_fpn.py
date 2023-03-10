@@ -1,4 +1,4 @@
-_base_ = ['mmdet::_base_/models/cascade_mask_rcnn_r50_fpn.py']
+_base_ = ['mmdet::_base_/models/cascade-mask-rcnn_r50_fpn.py']
 
 file_client_args = dict(backend='disk')
 
