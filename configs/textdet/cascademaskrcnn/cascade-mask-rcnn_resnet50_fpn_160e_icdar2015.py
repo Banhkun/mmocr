@@ -193,7 +193,7 @@ model = dict(
                 pos_weight=-1,
                 debug=False)
         ]),
-        test_cfg=dict(
+    test_cfg=dict(
         rpn=dict(
             nms_pre=1000,
             max_per_img=1000,
