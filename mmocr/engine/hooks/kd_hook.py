@@ -1,8 +1,7 @@
 import torch.nn.functional as F
 import torch
-from mmengine.hooks import Hook
+from mmengine.runner import Hook
 from mmengine.registry import HOOKS
-
 @HOOKS.register_module()
 class KnowledgeDistillationHook(Hook):
     def __init__(self, teacher_model, alpha, temperature):
@@ -10,8 +9,8 @@ class KnowledgeDistillationHook(Hook):
         self.alpha = alpha
         self.temperature = temperature
 
-    def after_train_iter(self, runner):
-        student_output = runner.outputs['preds']
+    def after_train_iter(self, runner,batch_idx, data_batch, outputs):
+        student_output = outputs['preds']
         with torch.no_grad():
             teacher_output = self.teacher_model(runner.inputs['img'])
 
@@ -20,4 +19,4 @@ class KnowledgeDistillationHook(Hook):
             F.softmax(teacher_output / self.temperature, dim=1),
             reduction='batchmean',
         )
-        runner.outputs['loss'] = runner.outputs['loss'] * (1 - self.alpha) + loss * self.alpha
+        outputs['loss'] = outputs['loss'] * (1 - self.alpha) + loss * self.alpha
