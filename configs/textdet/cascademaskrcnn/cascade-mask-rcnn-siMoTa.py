@@ -118,60 +118,7 @@ model = dict(
             loss_mask=dict(
                 type='CrossEntropyLoss', use_mask=True, loss_weight=1.0))),
         train_cfg=dict(
-        rpn=dict(
-            assigner=dict(type='SimOTAAssigner', center_radius=2.5),
-            sampler=dict(
-                type='RandomSampler',
-                num=256,
-                pos_fraction=0.5,
-                neg_pos_ub=-1,
-                add_gt_as_proposals=False),
-            allowed_border=0,
-            pos_weight=-1,
-            debug=False),
-        rpn_proposal=dict(
-            nms_pre=2000,
-            max_per_img=2000,
-            nms=dict(type='nms', iou_threshold=0.7),
-            min_bbox_size=0),
-        rcnn=[
-            dict(
-                assigner=dict(type='SimOTAAssigner', center_radius=2.5),
-
-                sampler=dict(
-                    type='RandomSampler',
-                    num=512,
-                    pos_fraction=0.25,
-                    neg_pos_ub=-1,
-                    add_gt_as_proposals=True),
-                mask_size=28,
-                pos_weight=-1,
-                debug=False),
-            dict(
-            assigner=dict(type='SimOTAAssigner', center_radius=2.5),
-
-                sampler=dict(
-                    type='RandomSampler',
-                    num=512,
-                    pos_fraction=0.25,
-                    neg_pos_ub=-1,
-                    add_gt_as_proposals=True),
-                mask_size=28,
-                pos_weight=-1,
-                debug=False),
-            dict(
-            assigner=dict(type='SimOTAAssigner', center_radius=2.5),
-
-                sampler=dict(
-                    type='RandomSampler',
-                    num=512,
-                    pos_fraction=0.25,
-                    neg_pos_ub=-1,
-                    add_gt_as_proposals=True),
-                mask_size=28,
-                pos_weight=-1,
-                debug=False)
-        ]),
+        assigner=dict(type='SimOTAAssigner', center_radius=2.5)),
     test_cfg=dict(
         rpn=dict(
             nms_pre=1000,
