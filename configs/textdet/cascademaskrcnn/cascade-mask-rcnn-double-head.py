@@ -45,6 +45,7 @@ model = dict(
         loss_bbox=dict(type='SmoothL1Loss', beta=1.0 / 9.0, loss_weight=1.0)),
     roi_head=dict(
         type='CascadeRoIHead',
+        reg_roi_scale_factor=1.3,
         num_stages=3,
         stage_loss_weights=[1, 0.5, 0.25],
         bbox_roi_extractor=dict(
@@ -52,24 +53,59 @@ model = dict(
             roi_layer=dict(type='RoIAlign', output_size=7, sampling_ratio=0),
             out_channels=256,
             featmap_strides=[4, 8, 16, 32]),
-        bbox_head=dict(
-            _delete_=True,
-            type='DoubleConvFCBBoxHead',
-            num_convs=4,
-            num_fcs=2,
-            in_channels=256,
-            conv_out_channels=1024,
-            fc_out_channels=1024,
-            roi_feat_size=7,
-            num_classes=1,
-            bbox_coder=dict(
-                type='DeltaXYWHBBoxCoder',
-                target_means=[0., 0., 0., 0.],
-                target_stds=[0.1, 0.1, 0.2, 0.2]),
-            reg_class_agnostic=False,
-            loss_cls=dict(
-                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=2.0),
-            loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=2.0)),
+        bbox_head=[
+            dict(
+                type='DoubleConvFCBBoxHead',
+                num_convs=4,
+                num_fcs=2,
+                in_channels=256,
+                conv_out_channels=1024,
+                fc_out_channels=1024,
+                roi_feat_size=7,
+                num_classes=1,
+                bbox_coder=dict(
+                    type='DeltaXYWHBBoxCoder',
+                    target_means=[0., 0., 0., 0.],
+                    target_stds=[0.1, 0.1, 0.2, 0.2]),
+                reg_class_agnostic=True,
+                loss_cls=dict(
+                    type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
+                loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0)),
+            dict(
+                type='DoubleConvFCBBoxHead',
+                num_convs=4,
+                num_fcs=2,
+                in_channels=256,
+                conv_out_channels=1024,
+                fc_out_channels=1024,
+                roi_feat_size=7,
+                num_classes=1,
+                bbox_coder=dict(
+                    type='DeltaXYWHBBoxCoder',
+                    target_means=[0., 0., 0., 0.],
+                    target_stds=[0.05, 0.05, 0.1, 0.1]),
+                reg_class_agnostic=True,
+                loss_cls=dict(
+                    type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
+                loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0)),
+            dict(
+                type='DoubleConvFCBBoxHead',
+                num_convs=4,
+                num_fcs=2,
+                in_channels=256,
+                conv_out_channels=1024,
+                fc_out_channels=1024,
+                roi_feat_size=7,
+                num_classes=1,
+                bbox_coder=dict(
+                    type='DeltaXYWHBBoxCoder',
+                    target_means=[0., 0., 0., 0.],
+                    target_stds=[0.033, 0.033, 0.067, 0.067]),
+                reg_class_agnostic=True,
+                loss_cls=dict(
+                    type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
+                loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=1.0))
+        ],
         mask_roi_extractor=dict(
             type='SingleRoIExtractor',
             roi_layer=dict(type='RoIAlign', output_size=14, sampling_ratio=0),
@@ -280,7 +316,7 @@ default_hooks = dict(
     timer=dict(type='IterTimerHook'),
     logger=dict(type='LoggerHook', interval=5),
     param_scheduler=dict(type='ParamSchedulerHook'),
-    checkpoint=dict(type='CheckpointHook', interval=20),
+    checkpoint=dict(type='CheckpointHook', interval=1, save_best='auto'),
     sampler_seed=dict(type='DistSamplerSeedHook'),
     sync_buffer=dict(type='SyncBuffersHook'),
     visualization=dict(
@@ -303,7 +339,7 @@ visualizer = dict(
     vis_backends=[dict(type='LocalVisBackend')])
 optim_wrapper = dict(
     type='OptimWrapper',
-    optimizer=dict(type='SGD', lr=0.08, momentum=0.9, weight_decay=0.0001))
+    optimizer=dict(type='SGD', lr=0.001, momentum=0.9, weight_decay=0.0001))
 train_cfg = dict(type='EpochBasedTrainLoop', max_epochs=160, val_interval=20)
 val_cfg = dict(type='ValLoop')
 test_cfg = dict(type='TestLoop')
@@ -312,8 +348,8 @@ param_scheduler = [
     dict(type='MultiStepLR', milestones=[80, 128], end=160)
 ]
 train_dataloader = dict(
-    batch_size=8,
-    num_workers=4,
+    batch_size=2,
+    num_workers=2,
     persistent_workers=True,
     sampler=dict(type='DefaultSampler', shuffle=True),
     dataset=dict(
@@ -402,6 +438,6 @@ test_dataloader = dict(
                 meta_keys=('img_path', 'ori_shape', 'img_shape',
                            'scale_factor'))
         ]))
-auto_scale_lr = dict(base_batch_size=8)
+auto_scale_lr = dict(base_batch_size=2)
 launcher = 'none'
 work_dir = './work_dirs/mask-rcnn_resnet50_fpn_160e_icdar2015'
