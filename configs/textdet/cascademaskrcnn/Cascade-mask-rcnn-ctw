@@ -249,10 +249,10 @@ test_pipeline = [
         type='PackTextDetInputs',
         meta_keys=('img_path', 'ori_shape', 'img_shape', 'scale_factor'))
 ]
-ctw_det_data_root = 'data/det/ctw1500'
+ctw_det_data_root = '/content/mmocr/ctw1500'
 ctw_det_train = dict(
     type='OCRDataset',
-    data_root='data/det/ctw1500',
+    data_root='/content/mmocr/ctw1500',
     ann_file='instances_training.json',
     data_prefix=dict(img_path='imgs/'),
     filter_cfg=dict(filter_empty_gt=True, min_size=32),
@@ -287,7 +287,7 @@ ctw_det_train = dict(
     ])
 ctw_det_test = dict(
     type='OCRDataset',
-    data_root='data/det/ctw1500',
+    data_root='/content/mmocr/ctw1500',
     ann_file='instances_test.json',
     data_prefix=dict(img_path='imgs/'),
     test_mode=True,
@@ -306,6 +306,7 @@ ctw_det_test = dict(
             type='PackTextDetInputs',
             meta_keys=('img_path', 'ori_shape', 'img_shape', 'scale_factor'))
     ])
+    
 default_scope = 'mmocr'
 env_cfg = dict(
     cudnn_benchmark=False,
@@ -369,14 +370,14 @@ train_dataloader = dict(
     sampler=dict(type='DefaultSampler', shuffle=True),
     dataset=dict(
         type='OCRDataset',
-        data_root='openmmlab:s3://openmmlab/datasets/ocr/det/ctw1500',
+        data_root='/content/mmocr/ctw1500',
         ann_file='instances_training.json',
         data_prefix=dict(img_path='imgs/'),
         filter_cfg=dict(filter_empty_gt=True, min_size=32),
         pipeline=[
             dict(
                 type='LoadImageFromFile',
-                file_client_args=dict(backend='petrel'),
+                file_client_args=dict(backend='disk'),
                 color_type='color_ignore_orientation'),
             dict(
                 type='LoadOCRAnnotations',
@@ -409,16 +410,17 @@ val_dataloader = dict(
     sampler=dict(type='DefaultSampler', shuffle=False),
     dataset=dict(
         type='OCRDataset',
-        data_root='openmmlab:s3://openmmlab/datasets/ocr/det/ctw1500',
+        data_root='/content/mmocr/ctw1500',
         ann_file='instances_test.json',
         data_prefix=dict(img_path='imgs/'),
+
         test_mode=True,
         pipeline=[
             dict(
                 type='LoadImageFromFile',
-                file_client_args=dict(backend='petrel'),
+                file_client_args=dict(backend='disk'),
                 color_type='color_ignore_orientation'),
-            dict(type='Resize', scale=(1600, 1600), keep_ratio=True),
+            dict(type='Resize', scale=(1920, 1920), keep_ratio=True),
             dict(
                 type='LoadOCRAnnotations',
                 with_polygon=True,
@@ -436,16 +438,16 @@ test_dataloader = dict(
     sampler=dict(type='DefaultSampler', shuffle=False),
     dataset=dict(
         type='OCRDataset',
-        data_root='openmmlab:s3://openmmlab/datasets/ocr/det/ctw1500',
+        data_root='/content/mmocr/ctw1500',
         ann_file='instances_test.json',
         data_prefix=dict(img_path='imgs/'),
         test_mode=True,
         pipeline=[
             dict(
                 type='LoadImageFromFile',
-                file_client_args=dict(backend='petrel'),
+                file_client_args=dict(backend='disk'),
                 color_type='color_ignore_orientation'),
-            dict(type='Resize', scale=(1600, 1600), keep_ratio=True),
+            dict(type='Resize', scale=(1920, 1920), keep_ratio=True),
             dict(
                 type='LoadOCRAnnotations',
                 with_polygon=True,
