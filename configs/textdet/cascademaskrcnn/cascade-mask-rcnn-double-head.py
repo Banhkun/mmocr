@@ -348,7 +348,7 @@ param_scheduler = [
     dict(type='MultiStepLR', milestones=[80, 128], end=160)
 ]
 train_dataloader = dict(
-    batch_size=2,
+    batch_size=4,
     num_workers=2,
     persistent_workers=True,
     sampler=dict(type='DefaultSampler', shuffle=True),
