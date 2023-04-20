@@ -2,6 +2,7 @@ file_client_args = dict(backend='disk')
 custom_imports = dict(
     imports=['projects.DiffusionDet.diffusiondet'], allow_failed_imports=False)
 
+
 model = dict(
     type='MMDetWrapper',
     text_repr_type='poly',
