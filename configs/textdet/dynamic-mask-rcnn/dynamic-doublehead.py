@@ -286,7 +286,7 @@ param_scheduler = [
     dict(type='MultiStepLR', milestones=[80, 128], end=160)
 ]
 train_dataloader = dict(
-    batch_size=4,
+    batch_size=3,
     num_workers=4,
     persistent_workers=True,
     sampler=dict(type='DefaultSampler', shuffle=True),
@@ -376,7 +376,7 @@ test_dataloader = dict(
                 meta_keys=('img_path', 'ori_shape', 'img_shape',
                            'scale_factor'))
         ]))
-auto_scale_lr = dict(base_batch_size=8)
+auto_scale_lr = dict(base_batch_size=3)
 launcher = 'none'
 work_dir = './work_dirs/dynamic-doublehead-icdar15/'
 
