@@ -378,4 +378,4 @@ test_dataloader = dict(
         ]))
 auto_scale_lr = dict(base_batch_size=8)
 launcher = 'none'
-work_dir = './work_dirs/mask-rcnn_resnet50_fpn_160e_icdar2015'
+work_dir = './work_dirs/dynamic-double-'
