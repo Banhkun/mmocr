@@ -29,11 +29,12 @@ class DynamicRoIHead(StandardRoIHead):
         self.iou_history = []
         # the beta history of the past `update_iter_interval` iterations
         self.beta_history = []
-        
-    def _bbox_forward(self, x: Tuple[Tensor], rois: Tensor) -> dict:
+    def _bbox_forward(self, stage: int, x: Tuple[Tensor],
+                      rois: Tensor) -> dict:
         """Box head forward function used in both training and testing.
 
         Args:
+            stage (int): The current stage in Cascade RoI Head.
             x (tuple[Tensor]): List of multi-level img features.
             rois (Tensor): RoIs with the shape (n, 5) where the first
                 column indicates batch id of each RoI.
@@ -45,23 +46,17 @@ class DynamicRoIHead(StandardRoIHead):
                 - `bbox_pred` (Tensor): Box energies / deltas.
                 - `bbox_feats` (Tensor): Extract bbox RoI features.
         """
-        bbox_cls_feats = self.bbox_roi_extractor(
-            x[:self.bbox_roi_extractor.num_inputs], rois)
-        bbox_reg_feats = self.bbox_roi_extractor(
-            x[:self.bbox_roi_extractor.num_inputs],
-            rois,
-            roi_scale_factor=self.reg_roi_scale_factor)
-        if self.with_shared_head:
-            bbox_cls_feats = self.shared_head(bbox_cls_feats)
-            bbox_reg_feats = self.shared_head(bbox_reg_feats)
-        cls_score, bbox_pred = self.bbox_head(bbox_cls_feats, bbox_reg_feats)
+        bbox_roi_extractor = self.bbox_roi_extractor[stage]
+        bbox_head = self.bbox_head[stage]
+        bbox_feats = bbox_roi_extractor(x[:bbox_roi_extractor.num_inputs],
+                                        rois)
+        # do not support caffe_c4 model anymore
+        cls_score, bbox_pred = bbox_head(bbox_feats)
 
         bbox_results = dict(
-            cls_score=cls_score,
-            bbox_pred=bbox_pred,
-            bbox_feats=bbox_cls_feats)
+            cls_score=cls_score, bbox_pred=bbox_pred, bbox_feats=bbox_feats)
         return bbox_results
-
+    
     def loss(self, x: Tuple[Tensor], rpn_results_list: InstanceList,
              batch_data_samples: SampleList) -> dict:
         """Forward function for training.
