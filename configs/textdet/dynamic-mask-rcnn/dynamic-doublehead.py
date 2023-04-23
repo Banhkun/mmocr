@@ -45,25 +45,29 @@ model = dict(
         loss_bbox=dict(type='L1Loss', loss_weight=1.0)),
     roi_head=dict(
         type='DynamicRoIHead',
+        reg_roi_scale_factor=1.3,
         bbox_roi_extractor=dict(
             type='SingleRoIExtractor',
             roi_layer=dict(type='RoIAlign', output_size=7, sampling_ratio=0),
             out_channels=256,
             featmap_strides=[4, 8, 16, 32]),
         bbox_head=dict(
-            type='Shared2FCBBoxHead',
+            type='DoubleConvFCBBoxHead',
+            num_convs=4,
+            num_fcs=2,
             in_channels=256,
+            conv_out_channels=1024,
             fc_out_channels=1024,
             roi_feat_size=7,
             num_classes=80,
             bbox_coder=dict(
                 type='DeltaXYWHBBoxCoder',
-                target_means=[0.0, 0.0, 0.0, 0.0],
+                target_means=[0., 0., 0., 0.],
                 target_stds=[0.1, 0.1, 0.2, 0.2]),
             reg_class_agnostic=False,
             loss_cls=dict(
-                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=1.0),
-            loss_bbox=dict(type='SmoothL1Loss', loss_weight=1.0, beta=1.0)),
+                type='CrossEntropyLoss', use_sigmoid=False, loss_weight=2.0),
+            loss_bbox=dict(type='SmoothL1Loss', beta=1.0, loss_weight=2.0)),
         mask_roi_extractor=dict(
             type='SingleRoIExtractor',
             roi_layer=dict(type='RoIAlign', output_size=14, sampling_ratio=0),
@@ -282,7 +286,7 @@ param_scheduler = [
     dict(type='MultiStepLR', milestones=[80, 128], end=160)
 ]
 train_dataloader = dict(
-    batch_size=8,
+    batch_size=4,
     num_workers=4,
     persistent_workers=True,
     sampler=dict(type='DefaultSampler', shuffle=True),
@@ -374,5 +378,5 @@ test_dataloader = dict(
         ]))
 auto_scale_lr = dict(base_batch_size=8)
 launcher = 'none'
-work_dir = './work_dirs/mask-rcnn_resnet50_fpn_160e_icdar2015'
+work_dir = './work_dirs/dynamic-doublehead-icdar15/'
 
