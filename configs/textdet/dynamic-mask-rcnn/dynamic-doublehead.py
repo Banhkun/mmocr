@@ -277,7 +277,7 @@ visualizer = dict(
     vis_backends=[dict(type='LocalVisBackend')])
 optim_wrapper = dict(
     type='OptimWrapper',
-    optimizer=dict(type='SGD', lr=0.08, momentum=0.9, weight_decay=0.0001))
+    optimizer=dict(type='SGD', lr=0.01, momentum=0.9, weight_decay=0.0001))
 train_cfg = dict(type='EpochBasedTrainLoop', max_epochs=160, val_interval=20)
 val_cfg = dict(type='ValLoop')
 test_cfg = dict(type='TestLoop')
@@ -376,6 +376,6 @@ test_dataloader = dict(
                 meta_keys=('img_path', 'ori_shape', 'img_shape',
                            'scale_factor'))
         ]))
-auto_scale_lr = dict(base_batch_size=3)
+auto_scale_lr = dict(base_batch_size=8)
 launcher = 'none'
-work_dir = './work_dirs/dynamic-doublehead-'
+work_dir = './work_dirs/mask-rcnn_resnet50_fpn_160e_icdar2015'
