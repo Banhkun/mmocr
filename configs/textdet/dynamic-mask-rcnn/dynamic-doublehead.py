@@ -378,5 +378,4 @@ test_dataloader = dict(
         ]))
 auto_scale_lr = dict(base_batch_size=3)
 launcher = 'none'
-work_dir = './work_dirs/dynamic-doublehead-icdar15/'
-
+work_dir = './work_dirs/dynamic-doublehead-'
