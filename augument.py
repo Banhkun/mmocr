@@ -1,13 +1,14 @@
 import json
 from PIL import Image
-from straug.warp import Curve
-import os
 import sys
 import os
 
 wd = '/opt/conda/lib/python3.7/site-packages/straug'
 sys.path.append(wd)
 os.chdir(wd)
+from straug.warp import Curve
+import os
+
 import argparse
 import os
 import numpy as np
