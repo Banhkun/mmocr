@@ -1,4 +1,6 @@
 file_client_args = dict(backend='disk')
+custom_imports = dict(
+    imports=['projects.DiffusionDet.diffusiondet'], allow_failed_imports=False)
 model = dict(
     type='MMDetWrapper',
     text_repr_type='poly',
@@ -29,7 +31,7 @@ model = dict(
             num_classes=1,
             feat_channels=256,
             num_proposals=500,
-            num_heads=6,
+            num_heads=5,
             deep_supervision=True,
             prior_prob=0.01,
             snr_scale=2.0,
