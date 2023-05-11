@@ -336,4 +336,4 @@ test_dataloader = dict(
         ]))
 auto_scale_lr = dict(base_batch_size=4)
 launcher = 'none'
-work_dir = '/content/drive/MyDrive/OCR/ckpt/difdet-oclip'
+work_dir = './work-dirs/difdet-oclip'
