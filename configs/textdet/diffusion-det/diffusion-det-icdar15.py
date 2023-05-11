@@ -15,15 +15,13 @@ model = dict(
         bgr_to_rgb=True,
         pad_size_divisor=32),
     backbone=dict(
-        type='ResNet',
-        depth=50,
-        num_stages=4,
-        out_indices=(0, 1, 2, 3),
-        frozen_stages=1,
-        norm_cfg=dict(type='BN', requires_grad=True),
-        norm_eval=True,
-        style='pytorch',
-        init_cfg=dict(type='Pretrained', checkpoint='torchvision://resnet50')),
+            _scope_='mmocr',
+            type='CLIPResNet',
+            init_cfg=dict(
+                type='Pretrained',
+                checkpoint=
+                'https://download.openmmlab.com/mmocr/backbone/resnet50-oclip-7ba0c533.pth'
+            )),
     neck=dict(
         type='FPN',
         in_channels=[256, 512, 1024, 2048],
@@ -31,7 +29,7 @@ model = dict(
         num_outs=4),
     bbox_head=dict(
         type='DynamicDiffusionDetHead',
-        num_classes=80,
+        num_classes=1,
         feat_channels=256,
         num_proposals=500,
         num_heads=6,
@@ -57,7 +55,7 @@ model = dict(
         # criterion
         criterion=dict(
             type='DiffusionDetCriterion',
-            num_classes=80,
+            num_classes=1,
             assigner=dict(
                 type='DiffusionDetMatcher',
                 match_costs=[
@@ -197,7 +195,7 @@ default_hooks = dict(
     timer=dict(type='IterTimerHook'),
     logger=dict(type='LoggerHook', interval=5),
     param_scheduler=dict(type='ParamSchedulerHook'),
-    checkpoint=dict(type='CheckpointHook', interval=20),
+    checkpoint=dict(type='CheckpointHook',by_epoch=False, interval=75000, max_keep_ckpts=3),
     sampler_seed=dict(type='DistSamplerSeedHook'),
     sync_buffer=dict(type='SyncBuffersHook'),
     visualization=dict(
@@ -208,7 +206,7 @@ default_hooks = dict(
         draw_gt=False,
         draw_pred=False))
 log_level = 'INFO'
-log_processor = dict(type='LogProcessor', window_size=10, by_epoch=True)
+log_processor = dict(type='LogProcessor', window_size=10, by_epoch=False)
 load_from = None
 resume = False
 val_evaluator = dict(type='HmeanIOUMetric')
@@ -246,15 +244,15 @@ test_cfg = dict(type='TestLoop')
 backend = 'pillow'
 
 train_dataloader = dict(
-    batch_size=2,
+    batch_size=4,
     num_workers=4,
     persistent_workers=True,
-    sampler=dict(type='DefaultSampler', shuffle=True),
+    sampler=dict(type='InfiniteSampler'),
     dataset=dict(
         type='OCRDataset',
         data_root='data/icdar2015',
         ann_file='textdet_train.json',
-        filter_cfg=dict(filter_empty_gt=True, min_size=32),
+        filter_cfg=dict(filter_empty_gt=False, min_size=1e-5),
         pipeline=[
             dict(
                 type='LoadImageFromFile',
@@ -336,6 +334,6 @@ test_dataloader = dict(
                 meta_keys=('img_path', 'ori_shape', 'img_shape',
                            'scale_factor'))
         ]))
-auto_scale_lr = dict(base_batch_size=8)
+auto_scale_lr = dict(base_batch_size=4)
 launcher = 'none'
-work_dir = './work_dirs/diffusion-det-icdar15'
+work_dir = '/content/drive/MyDrive/OCR/ckpt/difdet-oclip'
