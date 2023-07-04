@@ -1,6 +1,6 @@
 # OCR Code Execution Guide
 
-This guide will walk you through the steps required to implement and run the OCR (Optical Character Recognition) code using the mmocr library. Please follow the instructions below to set up the environment, install the necessary dependencies, and execute the code.
+This guide will walk you through the steps required to implement and run the STD (Scene Text Detection) code using the mmocr library. Please follow the instructions below to set up the environment, install the necessary dependencies, and execute the code.
 
 ## Environment Setup
 
