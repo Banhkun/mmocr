@@ -352,8 +352,8 @@ train_dataloader = dict(
     sampler=dict(type='DefaultSampler', shuffle=True),
     dataset=dict(
         type='OCRDataset',
-        data_root='/storageStudents/nguyenvd/Minh_Bao_kltn/vintext/train_images',
-        ann_file='/storageStudents/nguyenvd/Minh_Bao_kltn/vintext/train.json',
+        data_root='../storageStudents/nguyenvd/Minh_Bao_kltn/vintext/train_images',
+        ann_file='../storageStudents/nguyenvd/Minh_Bao_kltn/vintext/train.json',
         filter_cfg=dict(filter_empty_gt=True, min_size=32),
         pipeline=[
             dict(
@@ -391,8 +391,8 @@ val_dataloader = dict(
     sampler=dict(type='DefaultSampler', shuffle=False),
     dataset=dict(
         type='OCRDataset',
-        data_root='/storageStudents/nguyenvd/Minh_Bao_kltn/vintext/val_images',
-        ann_file='/storageStudents/nguyenvd/Minh_Bao_kltn/vintext/val.json',
+        data_root='../storageStudents/nguyenvd/Minh_Bao_kltn/vintext/val_images',
+        ann_file='../storageStudents/nguyenvd/Minh_Bao_kltn/vintext/val.json',
         test_mode=True,
         pipeline=[
             dict(
@@ -417,8 +417,8 @@ test_dataloader = dict(
     sampler=dict(type='DefaultSampler', shuffle=False),
     dataset=dict(
         type='OCRDataset',
-        data_root='/storageStudents/nguyenvd/Minh_Bao_kltn/vintext/test_images',
-        ann_file='/storageStudents/nguyenvd/Minh_Bao_kltn/vintext/test.json',
+        data_root='../storageStudents/nguyenvd/Minh_Bao_kltn/vintext/test_images',
+        ann_file='../storageStudents/nguyenvd/Minh_Bao_kltn/vintext/test.json',
         test_mode=True,
         pipeline=[
             dict(
