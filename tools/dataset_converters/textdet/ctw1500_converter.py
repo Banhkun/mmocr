@@ -88,7 +88,7 @@ def load_txt_info(gt_file, img_info):
         # e.g., 695,885,866,888,867,1146,696,1143,####Latin 9
         line = line.strip()
         strs = line.split(',')
-        category_id = 1
+        category_id = 0
         assert strs[28][0] == '#'
         xy = [int(x) for x in strs[0:28]]
         assert len(xy) == 28
@@ -133,7 +133,7 @@ def load_xml_info(gt_file, img_info):
             #    pts.extend([int(box[iter].attrib['x']),
             #  int(box[iter].attrib['y'])])
             iscrowd = 0
-            category_id = 1
+            category_id = 0
             bbox = [int(x), int(y), int(w), int(h)]
 
             coordinates = np.array(pts).reshape(-1, 2)

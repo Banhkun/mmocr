@@ -130,7 +130,7 @@ def load_txt_info(gt_file, img_info):
 
             anno = dict(
                 iscrowd=iscrowd,
-                category_id=1,
+                category_id=0,
                 bbox=bbox,
                 area=w * h,
                 segmentation=[segmentation])

@@ -1,5 +1,8 @@
-file_client_args = dict(backend='disk')
-
+_base_ = [
+    '../_base_/datasets/totaltext.py',
+    '../_base_/default_runtime.py',
+    '../_base_/schedules/schedule_sgd_base.py',
+]
 model = dict(
     type='MMDetWrapper',
     text_repr_type='poly',
@@ -215,6 +218,7 @@ train_pipeline = [
         with_polygon=True,
         with_bbox=True,
         with_label=True),
+    dict(type='FixInvalidPolygon'),
     dict(
         type='TorchVisionWrapper',
         op='ColorJitter',
@@ -234,208 +238,67 @@ train_pipeline = [
         meta_keys=('img_path', 'ori_shape', 'img_shape', 'flip',
                    'scale_factor', 'flip_direction'))
 ]
+
 test_pipeline = [
-    dict(
-        type='LoadImageFromFile',
-        file_client_args=dict(backend='disk'),
-        color_type='color_ignore_orientation'),
+    dict(type='LoadImageFromFile', color_type='color_ignore_orientation'),
     dict(type='Resize', scale=(1920, 1920), keep_ratio=True),
+    # add loading annotation after ``Resize`` because ground truth
+    # does not need to do resize data transform
     dict(
         type='LoadOCRAnnotations',
         with_polygon=True,
         with_bbox=True,
         with_label=True),
+    dict(type='FixInvalidPolygon'),
     dict(
         type='PackTextDetInputs',
         meta_keys=('img_path', 'ori_shape', 'img_shape', 'scale_factor'))
 ]
-icdar2015_textdet_data_root = 'data/icdar2015'
-icdar2015_textdet_train = dict(
-    type='OCRDataset',
-    data_root='data/icdar2015',
-    ann_file='textdet_train.json',
-    filter_cfg=dict(filter_empty_gt=True, min_size=32),
-    pipeline=[
-        dict(
-            type='LoadImageFromFile',
-            file_client_args=dict(backend='disk'),
-            color_type='color_ignore_orientation'),
-        dict(
-            type='LoadOCRAnnotations',
-            with_polygon=True,
-            with_bbox=True,
-            with_label=True),
-        dict(
-            type='TorchVisionWrapper',
-            op='ColorJitter',
-            brightness=0.12549019607843137,
-            saturation=0.5,
-            contrast=0.5),
-        dict(
-            type='RandomResize',
-            scale=(640, 640),
-            ratio_range=(1.0, 4.125),
-            keep_ratio=True),
-        dict(type='RandomFlip', prob=0.5),
-        dict(type='TextDetRandomCrop', target_size=(640, 640)),
-        dict(type='MMOCR2MMDet', poly2mask=True),
-        dict(
-            type='mmdet.PackDetInputs',
-            meta_keys=('img_path', 'ori_shape', 'img_shape', 'flip',
-                       'scale_factor', 'flip_direction'))
-    ])
-icdar2015_textdet_test = dict(
-    type='OCRDataset',
-    data_root='data/icdar2015',
-    ann_file='textdet_test.json',
-    test_mode=True,
-    pipeline=[
-        dict(
-            type='LoadImageFromFile',
-            file_client_args=dict(backend='disk'),
-            color_type='color_ignore_orientation'),
-        dict(type='Resize', scale=(1920, 1920), keep_ratio=True),
-        dict(
-            type='LoadOCRAnnotations',
-            with_polygon=True,
-            with_bbox=True,
-            with_label=True),
-        dict(
-            type='PackTextDetInputs',
-            meta_keys=('img_path', 'ori_shape', 'img_shape', 'scale_factor'))
-    ])
-default_scope = 'mmocr'
-env_cfg = dict(
-    cudnn_benchmark=False,
-    mp_cfg=dict(mp_start_method='fork', opencv_num_threads=0),
-    dist_cfg=dict(backend='nccl'))
-randomness = dict(seed=None)
+
+
+
 default_hooks = dict(
-    timer=dict(type='IterTimerHook'),
-    logger=dict(type='LoggerHook', interval=5),
-    param_scheduler=dict(type='ParamSchedulerHook'),
-    checkpoint=dict(type='CheckpointHook', interval=20),
-    sampler_seed=dict(type='DistSamplerSeedHook'),
-    sync_buffer=dict(type='SyncBuffersHook'),
-    visualization=dict(
-        type='VisualizationHook',
-        interval=1,
-        enable=False,
-        show=False,
-        draw_gt=False,
-        draw_pred=False))
-log_level = 'INFO'
-log_processor = dict(type='LogProcessor', window_size=10, by_epoch=True)
-load_from = None
-resume = False
-val_evaluator = dict(type='HmeanIOUMetric')
-test_evaluator = dict(type='HmeanIOUMetric')
-vis_backends = [dict(type='LocalVisBackend')]
-visualizer = dict(
-    type='TextDetLocalVisualizer',
-    name='visualizer',
-    vis_backends=[dict(type='LocalVisBackend')])
-optim_wrapper = dict(
-    type='OptimWrapper',
-    optimizer=dict(type='SGD', lr=0.08, momentum=0.9, weight_decay=0.0001))
-train_cfg = dict(type='EpochBasedTrainLoop', max_epochs=160, val_interval=20)
-val_cfg = dict(type='ValLoop')
-test_cfg = dict(type='TestLoop')
+    checkpoint=dict(
+        type='CheckpointHook',
+        save_best='icdar/hmean',
+        rule='greater',
+        _delete_=True,
+        interval=1,))
+
+
+
+optim_wrapper = dict(optimizer=dict(lr=1e-3, weight_decay=5e-4))
+train_cfg = dict(max_epochs=1500)
+# learning policy
 param_scheduler = [
-    dict(type='LinearLR', end=500, start_factor=0.001, by_epoch=False),
-    dict(type='MultiStepLR', milestones=[80, 128], end=160)
+    dict(type='StepLR', gamma=0.8, step_size=200, end=1200),
 ]
+
+# dataset settings
+totaltext_textdet_train = _base_.totaltext_textdet_train
+totaltext_textdet_test = _base_.totaltext_textdet_test
+totaltext_textdet_train.pipeline = train_pipeline
+totaltext_textdet_test.pipeline = test_pipeline
+
 train_dataloader = dict(
-    batch_size=8,
+    batch_size=4,
     num_workers=4,
     persistent_workers=True,
+    pin_memory=True,
     sampler=dict(type='DefaultSampler', shuffle=True),
-    dataset=dict(
-        type='OCRDataset',
-        data_root='data/icdar2015',
-        ann_file='textdet_train.json',
-        filter_cfg=dict(filter_empty_gt=True, min_size=32),
-        pipeline=[
-            dict(
-                type='LoadImageFromFile',
-                file_client_args=dict(backend='disk'),
-                color_type='color_ignore_orientation'),
-            dict(
-                type='LoadOCRAnnotations',
-                with_polygon=True,
-                with_bbox=True,
-                with_label=True),
-            dict(
-                type='TorchVisionWrapper',
-                op='ColorJitter',
-                brightness=0.12549019607843137,
-                saturation=0.5,
-                contrast=0.5),
-            dict(
-                type='RandomResize',
-                scale=(640, 640),
-                ratio_range=(1.0, 4.125),
-                keep_ratio=True),
-            dict(type='RandomFlip', prob=0.5),
-            dict(type='TextDetRandomCrop', target_size=(640, 640)),
-            dict(type='MMOCR2MMDet', poly2mask=True),
-            dict(
-                type='mmdet.PackDetInputs',
-                meta_keys=('img_path', 'ori_shape', 'img_shape', 'flip',
-                           'scale_factor', 'flip_direction'))
-        ]))
+    dataset=totaltext_textdet_train)
+
 val_dataloader = dict(
-    batch_size=1,
-    num_workers=1,
+    batch_size=4,
+    num_workers=4,
     persistent_workers=True,
+    pin_memory=True,
     sampler=dict(type='DefaultSampler', shuffle=False),
-    dataset=dict(
-        type='OCRDataset',
-        data_root='data/icdar2015',
-        ann_file='textdet_test.json',
-        test_mode=True,
-        pipeline=[
-            dict(
-                type='LoadImageFromFile',
-                file_client_args=dict(backend='disk'),
-                color_type='color_ignore_orientation'),
-            dict(type='Resize', scale=(1920, 1920), keep_ratio=True),
-            dict(
-                type='LoadOCRAnnotations',
-                with_polygon=True,
-                with_bbox=True,
-                with_label=True),
-            dict(
-                type='PackTextDetInputs',
-                meta_keys=('img_path', 'ori_shape', 'img_shape',
-                           'scale_factor'))
-        ]))
-test_dataloader = dict(
-    batch_size=1,
-    num_workers=1,
-    persistent_workers=True,
-    sampler=dict(type='DefaultSampler', shuffle=False),
-    dataset=dict(
-        type='OCRDataset',
-        data_root='data/icdar2015',
-        ann_file='textdet_test.json',
-        test_mode=True,
-        pipeline=[
-            dict(
-                type='LoadImageFromFile',
-                file_client_args=dict(backend='disk'),
-                color_type='color_ignore_orientation'),
-            dict(type='Resize', scale=(1920, 1920), keep_ratio=True),
-            dict(
-                type='LoadOCRAnnotations',
-                with_polygon=True,
-                with_bbox=True,
-                with_label=True),
-            dict(
-                type='PackTextDetInputs',
-                meta_keys=('img_path', 'ori_shape', 'img_shape',
-                           'scale_factor'))
-        ]))
-auto_scale_lr = dict(base_batch_size=8)
-launcher = 'none'
-work_dir = './work_dirs/cascade-mask-rcnn_resnet50_fpn_160e_icdar2015'
+    dataset=totaltext_textdet_test)
+
+test_dataloader = val_dataloader
+
+auto_scale_lr = dict(base_batch_size=4)
+
+find_unused_parameters = True
+work_dir = './work_dirs/cascade-mask-rcnn_resnet50_fpn_160e_totaltext'

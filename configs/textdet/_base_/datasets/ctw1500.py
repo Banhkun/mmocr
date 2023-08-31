@@ -1,4 +1,4 @@
-ctw1500_textdet_data_root = 'data/det/ctw1500'
+ctw1500_textdet_data_root = 'data/ctw1500'
 
 ctw1500_textdet_train = dict(
     type='OCRDataset',
