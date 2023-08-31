@@ -1,7 +1,7 @@
 _base_ = [
     '../_base_/datasets/ctw1500.py',
     '../_base_/default_runtime.py',
-    '../_base_/schedules/schedule_sgd_base.py',
+    '../_base_/schedules/schedule_sgd_160.py',
 ]
 model = dict(
     type='MMDetWrapper',
