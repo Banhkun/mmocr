@@ -2,8 +2,6 @@
 import numpy as np
 import torch
 from torch.nn.modules.utils import _pair
-
-
 def mask_target(pos_proposals_list, pos_assigned_gt_inds_list, gt_masks_list,
                 cfg):
     """Compute mask target for positive proposals in multiple images.
