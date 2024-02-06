@@ -5,6 +5,8 @@ import os
 
 wd = '/opt/conda/lib/python3.7/site-packages/straug'
 sys.path.append(wd)
+
+
 os.chdir(wd)
 from straug.warp import Curve
 import os
